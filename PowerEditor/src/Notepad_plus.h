@@ -25,106 +25,37 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#ifndef NOTEPAD_PLUS_H
-#define NOTEPAD_PLUS_H
+#pragma once
 
-#ifndef SCINTILLA_EDIT_VIEW_H
 #include "ScintillaEditView.h"
-#endif //SCINTILLA_EDIT_VIEW_H
-
-#ifndef DOCTABVIEW_H
 #include "DocTabView.h"
-#endif //DOCTABVIEW_H
-
-#ifndef SPLITTER_CONTAINER_H
 #include "SplitterContainer.h"
-#endif //SPLITTER_CONTAINER_H
-
-#ifndef FIND_REPLACE_DLG_H
 #include "FindReplaceDlg.h"
-#endif //FIND_REPLACE_DLG_H
-
-#ifndef ABOUT_DLG_H
 #include "AboutDlg.h"
-#endif //ABOUT_DLG_H
-
-#ifndef RUN_DLG_H
 #include "RunDlg.h"
-#endif //RUN_DLG_H
-
-#ifndef STATUS_BAR_H
 #include "StatusBar.h"
-#endif //STATUS_BAR_H
-
-#ifndef LASTRECENTFILELIST_H
 #include "lastRecentFileList.h"
-#endif //LASTRECENTFILELIST_H
-
-#ifndef GOTILINE_DLG_H
 #include "GoToLineDlg.h"
-#endif //GOTILINE_DLG_H
-
-#ifndef FINDCHARSINRANGE_DLG_H
 #include "FindCharsInRange.h"
-#endif //FINDCHARSINRANGE_DLG_H
-
-#ifndef COLUMNEDITOR_H
 #include "columnEditor.h"
-#endif //COLUMNEDITOR_H
-
-#ifndef WORD_STYLE_H
 #include "WordStyleDlg.h"
-#endif //WORD_STYLE_H
-
-#ifndef TRAY_ICON_CONTROLER_H
 #include "trayIconControler.h"
-#endif //TRAY_ICON_CONTROLER_H
-
-#ifndef PLUGINSMANAGER_H
 #include "PluginsManager.h"
-#endif //PLUGINSMANAGER_H
 /*
-#ifndef NOTEPAD_PLUS_MSGS_H
 #include "Notepad_plus_msgs.h"
-#endif //NOTEPAD_PLUS_MSGS_H
 */
-#ifndef PREFERENCE_DLG_H
 #include "preferenceDlg.h"
-#endif //PREFERENCE_DLG_H
-
-#ifndef WINDOWS_DLG_H
 #include "WindowsDlg.h"
-#endif //WINDOWS_DLG_H
-
-#ifndef RUN_MACRO_DLG_H
 #include "RunMacroDlg.h"
-#endif //RUN_MACRO_DLG_H
-
-#ifndef DOCKINGMANAGER_H
 #include "DockingManager.h"
-#endif //DOCKINGMANAGER_H
-
-#ifndef PROCESSUS_H
-#include "Process.h"
-#endif //PROCESSUS_H
-
-#ifndef AUTOCOMPLETION_H
+#include "Processus.h"
 #include "AutoCompletion.h"
-#endif //AUTOCOMPLETION_H
-
-#ifndef SMARTHIGHLIGHTER_H
 #include "SmartHighlighter.h"
-#endif //SMARTHIGHLIGHTER_H
-
-#ifndef SCINTILLACTRLS_H
 #include "ScintillaCtrls.h"
-#endif //SCINTILLACTRLS_H
-
-#ifndef SIZE_DLG_H
 #include "lesDlgs.h"
-#endif //SIZE_DLG_H
-
+#include "pluginsAdmin.h"
 #include "localization.h"
+#include "md5Dlgs.h"
 #include <vector>
 #include <iso646.h>
 
@@ -186,7 +117,6 @@ struct VisibleGUIConf final
 	}
 };
 
-
 class FileDialog;
 class Notepad_plus_Window;
 class AnsiCharPanel;
@@ -195,9 +125,7 @@ class VerticalFileSwitcher;
 class ProjectPanel;
 class DocumentMap;
 class FunctionListPanel;
-
-
-
+class FileBrowser;
 
 
 class Notepad_plus final
@@ -240,6 +168,7 @@ public:
 	bool fileCloseAllToRight();
 	bool fileSave(BufferID id = BUFFER_INVALID);
 	bool fileSaveAll();
+	bool fileSaveSpecific(const generic_string& fileNameToSave);
 	bool fileSaveAs(BufferID id = BUFFER_INVALID, bool isSaveCopy = false);
 	bool fileDelete(BufferID id = BUFFER_INVALID);
 	bool fileRename(BufferID id = BUFFER_INVALID);
@@ -250,11 +179,13 @@ public:
 	//@}
 
 	bool isFileSession(const TCHAR * filename);
+	bool isFileWorkspace(const TCHAR * filename);
 	void filePrint(bool showDialog);
-	bool saveScintillaParams();
+	void saveScintillasZoom();
 
 	bool saveGUIParams();
 	bool saveProjectPanelsParams();
+	bool saveFileBrowserParam();
 	void saveDockingParams();
     void saveUserDefineLangs();
     void saveShortcuts();
@@ -281,6 +212,7 @@ public:
 	bool loadSession(Session & session, bool isSnapshotMode = false);
 
 	void notifyBufferChanged(Buffer * buffer, int mask);
+	bool findInFinderFiles(FindersInfo *findInFolderInfo);
 	bool findInFiles();
 	bool replaceInFiles();
 	void setFindReplaceFolderFilter(const TCHAR *dir, const TCHAR *filters);
@@ -339,15 +271,20 @@ private:
 
 	// Dialog
 	FindReplaceDlg _findReplaceDlg;
+	FindInFinderDlg _findInFinderDlg;
+
 	FindIncrementDlg _incrementFindDlg;
     AboutDlg _aboutDlg;
 	DebugInfoDlg _debugInfoDlg;
 	RunDlg _runDlg;
+	MD5FromFilesDlg _md5FromFilesDlg;
+	MD5FromTextDlg _md5FromTextDlg;
     GoToLineDlg _goToLineDlg;
 	ColumnEditorDlg _colEditorDlg;
 	WordStyleDlg _configStyleDlg;
 	PreferenceDlg _preference;
 	FindCharsInRangeDlg _findCharsInRangeDlg;
+	PluginsAdminDlg _pluginsAdminDlg;
 
 	// a handle list of all the Notepad++ dialogs
 	std::vector<HWND> _hModelessDlgs;
@@ -361,6 +298,8 @@ private:
 
 	bool _sysMenuEntering = false;
 
+	// make sure we don't recursively call doClose when closing the last file with -quitOnEmpty
+	bool _isAttemptingCloseOnQuit = false;
 
 	// For FullScreen/PostIt features
 	VisibleGUIConf	_beforeSpecialView;
@@ -373,24 +312,17 @@ private:
 	bool _playingBackMacro = false;
 	RunMacroDlg _runMacroDlg;
 
+	// For conflict detection when saving Macros or RunCommands
+	ShortcutMapper * _pShortcutMapper = nullptr;
+
 	// For hotspot
 	bool _linkTriggered = true;
-	bool _isHotspotDblClicked = false;
 	bool _isFolding = false;
 
 	//For Dynamic selection highlight
 	CharacterRange _prevSelectedRange;
 
-	struct ActivateAppInfo final
-	{
-		bool _isActivated = false;
-		int _x = 0;
-		int _y = 0;
-	}
-	_activeAppInf;
-
 	//Synchronized Scolling
-
 	struct SyncInfo final
 	{
 		int _line = 0;
@@ -428,6 +360,8 @@ private:
 	ProjectPanel* _pProjectPanel_2 = nullptr;
 	ProjectPanel* _pProjectPanel_3 = nullptr;
 
+	FileBrowser* _pFileBrowser = nullptr;
+
 	DocumentMap* _pDocMap = nullptr;
 	FunctionListPanel* _pFuncList = nullptr;
 
@@ -451,7 +385,7 @@ private:
 	bool reloadLang();
 	bool loadStyles();
 
-	int currentView(){
+	int currentView() {
 		return _activeView;
 	}
 
@@ -464,6 +398,8 @@ private:
 	}
 
 	bool canHideView(int whichOne);	//true if view can safely be hidden (no open docs etc)
+
+	bool isEmpty(); // true if we have 1 view with 1 clean, untitled doc
 
 	int switchEditViewTo(int gid);	//activate other view (set focus etc)
 
@@ -512,6 +448,7 @@ private:
 	enum LangType menuID2LangType(int cmdID);
 
 	BOOL processIncrFindAccel(MSG *msg) const;
+	BOOL processFindAccel(MSG *msg) const;
 
 	void checkMenuItem(int itemID, bool willBeChecked) const {
 		::CheckMenuItem(_mainMenuHandle, itemID, MF_BYCOMMAND | (willBeChecked?MF_CHECKED:MF_UNCHECKED));
@@ -526,7 +463,7 @@ private:
     void bookmarkAdd(int lineno) const
 	{
 		if (lineno == -1)
-			lineno = _pEditView->getCurrentLineNumber();
+			lineno = static_cast<int32_t>(_pEditView->getCurrentLineNumber());
 		if (!bookmarkPresent(lineno))
 			_pEditView->execute(SCI_MARKERADD, lineno, MARK_BOOKMARK);
 	}
@@ -534,15 +471,15 @@ private:
     void bookmarkDelete(int lineno) const
 	{
 		if (lineno == -1)
-			lineno = _pEditView->getCurrentLineNumber();
-		if ( bookmarkPresent(lineno))
+			lineno = static_cast<int32_t>(_pEditView->getCurrentLineNumber());
+		while (bookmarkPresent(lineno))
 			_pEditView->execute(SCI_MARKERDELETE, lineno, MARK_BOOKMARK);
 	}
 
     bool bookmarkPresent(int lineno) const
 	{
 		if (lineno == -1)
-			lineno = _pEditView->getCurrentLineNumber();
+			lineno = static_cast<int32_t>(_pEditView->getCurrentLineNumber());
 		LRESULT state = _pEditView->execute(SCI_MARKERGET, lineno);
 		return ((state & (1 << MARK_BOOKMARK)) != 0);
 	}
@@ -550,7 +487,7 @@ private:
     void bookmarkToggle(int lineno) const
 	{
 		if (lineno == -1)
-			lineno = _pEditView->getCurrentLineNumber();
+			lineno = static_cast<int32_t>(_pEditView->getCurrentLineNumber());
 
 		if (bookmarkPresent(lineno))
 			bookmarkDelete(lineno);
@@ -576,12 +513,12 @@ private:
     bool braceMatch();
 
     void activateNextDoc(bool direction);
-	void activateDoc(int pos);
+	void activateDoc(size_t pos);
 
 	void updateStatusBar();
 	size_t getSelectedCharNumber(UniMode);
 	size_t getCurrentDocCharCount(UniMode u);
-	int getSelectedAreas();
+	size_t getSelectedAreas();
 	size_t getSelectedBytes();
 	bool isFormatUnicode(UniMode);
 	int getBOMSize(UniMode);
@@ -596,9 +533,7 @@ private:
 	bool findInOpenedFiles();
 	bool findInCurrentFile();
 
-	bool matchInList(const TCHAR *fileName, const std::vector<generic_string> & patterns);
 	void getMatchedFileNames(const TCHAR *dir, const std::vector<generic_string> & patterns, std::vector<generic_string> & fileNames, bool isRecursive, bool isInHiddenDir);
-
 	void doSynScorll(HWND hW);
 	void setWorkingDir(const TCHAR *dir);
 	bool str2Cliboard(const generic_string & str2cpy);
@@ -630,6 +565,7 @@ private:
 	void launchProjectPanel(int cmdID, ProjectPanel ** pProjPanel, int panelID);
 	void launchDocMap();
 	void launchFunctionList();
+	void launchFileBrowser(const std::vector<generic_string> & folders);
 	void showAllQuotes() const;
 	static DWORD WINAPI threadTextPlayer(void *text2display);
 	static DWORD WINAPI threadTextTroller(void *params);
@@ -637,6 +573,11 @@ private:
 	static bool deleteBack(ScintillaEditView *pCurrentView, BufferID targetBufID);
 	static bool deleteForward(ScintillaEditView *pCurrentView, BufferID targetBufID);
 	static bool selectBack(ScintillaEditView *pCurrentView, BufferID targetBufID);
+
+	void retrieveDefaultWordChars(std::string & charList);
+	void addCustomWordChars();
+	void restoreDefaultWordChars();
+	void setCustomWordChars();
 
 	static int getRandomNumber(int rangeMax = -1)
 	{
@@ -647,7 +588,14 @@ private:
 	}
 
 	static DWORD WINAPI backupDocument(void *params);
+
+	static DWORD WINAPI monitorFileOnChange(void * params);
+	struct MonitorInfo final {
+		MonitorInfo(Buffer *buf, HWND nppHandle) :
+			_buffer(buf), _nppHandle(nppHandle) {};
+		Buffer *_buffer = nullptr;
+		HWND _nppHandle = nullptr;
+	};
 };
 
 
-#endif //NOTEPAD_PLUS_H

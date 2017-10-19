@@ -25,14 +25,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#pragma once
 
-#ifndef COLUMNEDITOR_H
-#define COLUMNEDITOR_H
-
-#ifndef COLUMNEDITOR_RC_H
 #include "columnEditor_rc.h"
-#endif //COLUMNEDITOR_RC_H
-
 #include "StaticDialog.h"
 
 class ScintillaEditView;
@@ -70,8 +65,8 @@ protected :
 
 private :
 
-    ScintillaEditView **_ppEditView;
+    ScintillaEditView **_ppEditView = nullptr;
 
 
 };
-#endif// COLUMNEDITOR_H
+
